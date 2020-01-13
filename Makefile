@@ -2,8 +2,8 @@
 
 build:
 	dep ensure -v
-	env GOOS=linux go build -ldflags="-s -w" -o bin/hello hello.go
-	env GOOS=linux go build -ldflags="-s -w" -o bin/world world.go
+	env GOOS=linux go build -ldflags="-s -w" -o bin/hello handlers/hello.go
+	env GOOS=linux go build -ldflags="-s -w" -o bin/world handlers/world.go
 
 clean:
 	rm -rf ./bin ./vendor Gopkg.lock
