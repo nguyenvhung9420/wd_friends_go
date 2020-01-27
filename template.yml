@@ -34,4 +34,4 @@ Resources:
           Type: Api
           Properties:
             Path: /find_user
-            Method: get
+            Method: post

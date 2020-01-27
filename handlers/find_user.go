@@ -42,7 +42,7 @@ package main
 // snippet-start:[dynamodb.go.scan_items.imports]
 import (
     "bytes"
-	"context"
+	// "context"
     "encoding/json"
 
     "github.com/aws/aws-lambda-go/events"
@@ -59,45 +59,36 @@ import (
 )
 
 type Response events.APIGatewayProxyResponse
+type Request events.APIGatewayProxyRequest
 
-func Handler(ctx context.Context) (Response, error) {
+// func Handler(ctx context.Context) (Response, error) {
+func Handler(request Request) (Response, error) {
 
     sess, err := session.NewSession(&aws.Config{
         Region: aws.String("ap-southeast-1")},
     )
+    var requestBody map[string]interface{}
+    err = json.Unmarshal([]byte(request.Body), &requestBody)
+	if err != nil {
+		return Response{Body: err.Error(), StatusCode: 404}, nil
+	}
 
+    var emailToFind string
+    emailToFind = fmt.Sprintf("%v", requestBody["email"])
+    fmt.Println(emailToFind)
+    
     // Create DynamoDB client
     svc := dynamodb.New(sess)
-    // snippet-end:[dynamodb.go.scan_items.session]
-
-    // snippet-start:[dynamodb.go.scan_items.vars]
-    tableName := "groups"
-    admin := "motethansen"
-    // snippet-end:[dynamodb.go.scan_items.vars]
-
-    // snippet-start:[dynamodb.go.scan_items.expr]
-    // Create the Expression to fill the input struct with.
-    // Get all movies in that year; we'll pull out those with a higher rating later
-    filt := expression.Name("admin").Equal(expression.Value(admin))
-
-    // Or we could get by ratings and pull out those with the right year later
-    //    filt := expression.Name("info.rating").GreaterThan(expression.Value(min_rating))
-
-    // Get back the title, year, and rating
-    // proj := expression.NamesList(expression.Name("Title"), expression.Name("Year"), expression.Name("Rating"))
-    // proj := expression.NamesList(expression.Name("groupID"), expression.Name("groupname"))
-
-
-    // expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
+    tableName := "friends"
+    email := emailToFind
+    filt := expression.Name("email").Equal(expression.Value(email))
     expr, err := expression.NewBuilder().WithFilter(filt).Build()
     if err != nil {
         fmt.Println("Got error building expression:")
         fmt.Println(err.Error())
         os.Exit(1)
     }
-    // snippet-end:[dynamodb.go.scan_items.expr]
 
-    // snippet-start:[dynamodb.go.scan_items.call]
     // Build the query input parameters
     params := &dynamodb.ScanInput{
         ExpressionAttributeNames:  expr.Names(),
@@ -121,14 +112,15 @@ func Handler(ctx context.Context) (Response, error) {
     for _, i := range result.Items {
         var item map[string]interface{}
         err = dynamodbattribute.UnmarshalMap(i, &item)
-        av, err := json.Marshal(item)
+
+        av, err := json.Marshal(item) // This av is just for testing purpose:
 
         if err != nil {
             fmt.Println("Got error unmarshalling:")
             fmt.Println(err.Error())
             os.Exit(1)
         }
-        fmt.Println(string(av))
+        fmt.Println(string(av)) // Printing av is just for testing purpose:
         toReturn = append(toReturn, item)
         numItems++
     }
@@ -156,9 +148,7 @@ func Handler(ctx context.Context) (Response, error) {
 	}
 
 	return resp, nil
-    // snippet-end:[dynamodb.go.scan_items.process]
 }
-// snippet-end:[dynamodb.go.scan_items]
 
 
 func main() {
