@@ -41,7 +41,12 @@ package main
 
 // snippet-start:[dynamodb.go.scan_items.imports]
 import (
+    "bytes"
+	"context"
     "encoding/json"
+
+    "github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 
     "github.com/aws/aws-sdk-go/aws"
     "github.com/aws/aws-sdk-go/aws/session"
@@ -53,7 +58,9 @@ import (
     "os"
 )
 
-func main() {
+type Response events.APIGatewayProxyResponse
+
+func Handler(ctx context.Context) (Response, error) {
 
     sess, err := session.NewSession(&aws.Config{
         Region: aws.String("ap-southeast-1")},
@@ -109,6 +116,8 @@ func main() {
     }
     numItems := 0
 
+    var toReturn []map[string]interface{}
+
     for _, i := range result.Items {
         var item map[string]interface{}
         err = dynamodbattribute.UnmarshalMap(i, &item)
@@ -120,10 +129,38 @@ func main() {
             os.Exit(1)
         }
         fmt.Println(string(av))
+        toReturn = append(toReturn, item)
         numItems++
     }
 
     fmt.Println("Found", numItems, "item(s).")
+
+    var buf bytes.Buffer
+    // body, err := json.Marshal(map[string]interface{}{
+	// 	"message": "This is handler 2!",
+    // })
+    body, err := json.Marshal(toReturn)
+	if err != nil {
+		return Response{StatusCode: 404}, err
+	}
+	json.HTMLEscape(&buf, body)
+
+    resp := Response{
+		StatusCode:      200,
+		IsBase64Encoded: false,
+		Body:            buf.String(),
+		Headers: map[string]string{
+			"Content-Type":           "application/json",
+			"X-MyCompany-Func-Reply": "hello-handler",
+		},
+	}
+
+	return resp, nil
     // snippet-end:[dynamodb.go.scan_items.process]
 }
 // snippet-end:[dynamodb.go.scan_items]
+
+
+func main() {
+	lambda.Start(Handler)
+}

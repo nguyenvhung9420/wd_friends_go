@@ -39,6 +39,12 @@ package:
     - ./bin/**
 
 functions:
+  find_user:
+    handler: bin/find_user
+    events:
+      - http:
+          path: find_user
+          method: get
   hello:
     handler: bin/hello
     events:

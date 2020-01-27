@@ -24,3 +24,14 @@ Resources:
           Properties:
             Path: /world
             Method: get
+  HelloWorldFunction3:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: bin/find_user
+      Runtime: go1.x
+      Events:
+        Vote:
+          Type: Api
+          Properties:
+            Path: /find_user
+            Method: get
