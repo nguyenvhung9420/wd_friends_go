@@ -22,12 +22,12 @@ type Response events.APIGatewayProxyResponse
 type Request events.APIGatewayProxyRequest
 
 type Item struct {
-    Email string
-    nickname string
-    followings  []string
-    followers  []string
-    groupParticipations []string
-    bio string
+    Email string `json:"email"`
+    Nickname string `json:"nickname"`
+    Followings []string  `json:"followings"`
+    Followers []string  `json:"followers"`
+    GroupParticipations []string  `json:"groupParticipations"`
+    Bio string `json:"bio"`
 }
 
 type Req struct {
@@ -69,21 +69,15 @@ func Handler(request Request) (Response, error) {
     // fmt.Println(request.Body)
     fmt.Println(req)
     
-    var emptyStringSlive []string
+    // var emptyStringSlive []string
 
     item := Item{
-        // email: requestBody.email,
-        // nickname: requestBody.nickname,
-        // followings:  emptyStringSlive,
-        // followers:  emptyStringSlive,
-        // groupParticipations: emptyStringSlive,
-        // bio: requestBody.bio,
-        Email: "nguyenvhung@mail.ru",
-        nickname: "ru_hung",
-        followings:  emptyStringSlive,
-        followers:  emptyStringSlive,
-        groupParticipations: emptyStringSlive,
-        bio: "C'est le bio",
+        Email: "nguyenvhung@mail3.ru",
+        Nickname: "ru_hung",
+        Followings: []string{"me", "you"} ,
+        Followers: []string{"me", "you"}  ,
+        GroupParticipations: []string{"me", "you"} ,
+        Bio: "C'est le bio",
     }
     
     // Create DynamoDB client

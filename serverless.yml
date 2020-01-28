@@ -8,30 +8,6 @@ provider:
   name: aws
   runtime: go1.x
 
-# you can overwrite defaults here
-#  stage: dev
-#  region: us-east-1
-
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
-
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
 package:
   exclude:
     - ./**
@@ -39,6 +15,12 @@ package:
     - ./bin/**
 
 functions:
+  participate_group:
+    handler: bin/participate_group
+    events:
+      - http:
+          path: participate_group
+          method: post
   add_user_todynamo:
     handler: bin/add_user_todynamo
     events:
