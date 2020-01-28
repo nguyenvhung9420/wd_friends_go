@@ -61,22 +61,28 @@ import (
 type Response events.APIGatewayProxyResponse
 type Request events.APIGatewayProxyRequest
 
+type BodyRequest struct {
+	Email string `json:"email"`
+}
+
 // func Handler(ctx context.Context) (Response, error) {
 func Handler(request Request) (Response, error) {
 
     sess, err := session.NewSession(&aws.Config{
         Region: aws.String("ap-southeast-1")},
     )
-    var requestBody map[string]interface{}
+    // var requestBody map[string]interface{}
+    var requestBody BodyRequest
     err = json.Unmarshal([]byte(request.Body), &requestBody)
 	if err != nil {
 		return Response{Body: err.Error(), StatusCode: 404}, nil
 	}
 
     var emailToFind string
-    emailToFind = fmt.Sprintf("%v", requestBody["email"])
-    fmt.Println(emailToFind)
-    
+    // emailToFind = fmt.Sprintf("%v", requestBody["email"])
+    emailToFind = requestBody.Email
+    fmt.Println(requestBody)
+
     // Create DynamoDB client
     svc := dynamodb.New(sess)
     tableName := "friends"

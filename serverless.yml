@@ -39,6 +39,12 @@ package:
     - ./bin/**
 
 functions:
+  add_user_todynamo:
+    handler: bin/add_user_todynamo
+    events:
+      - http:
+          path: add_user_todynamo
+          method: post
   find_user:
     handler: bin/find_user
     events:
