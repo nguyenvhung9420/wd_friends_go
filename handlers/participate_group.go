@@ -21,26 +21,28 @@ import (
 type Response events.APIGatewayProxyResponse
 type Request events.APIGatewayProxyRequest
 
-// type Item struct {
-//     Email string `json:"email"`
-//     Nickname string `json:"nickname"`
-//     Followings []string  `json:"followings"`
-//     Followers []string  `json:"followers"`
-//     GroupParticipations []string  `json:"groupParticipations"`
-//     Bio string `json:"bio"`
-// }
-
-// type Req struct {
-//     Email string `json:"email"`
-//     Nickname string `json:"nickname"`
-//     Bio string `json:"bio"`
-// }
+type Req struct {
+    Email string `json:"email"`
+    GroupToJoin string `json:"group_to_join"`
+}
 
 func Handler(request Request) (Response, error) {
 
     sess, err := session.NewSession(&aws.Config{
         Region: aws.String("ap-southeast-1")},
     )
+
+    var req Req
+    err = json.Unmarshal([]byte(request.Body), &req)
+	if err != nil {
+		return Response{Body: err.Error(), StatusCode: 404}, nil
+	}
+
+    var email string
+    var group_to_join string
+    fmt.Println(req)
+    email = req.Email
+    group_to_join = req.GroupToJoin
     
     svc := dynamodb.New(sess)
     tableName := "friends"
@@ -51,7 +53,7 @@ func Handler(request Request) (Response, error) {
 	}
 
 	av := &dynamodb.AttributeValue{
-		S: aws.String("Hung"),
+		S: aws.String(group_to_join),  // here
 	}
 	var qids []*dynamodb.AttributeValue
 	qids = append(qids, av)
@@ -59,7 +61,7 @@ func Handler(request Request) (Response, error) {
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"email": {
-				S: aws.String("nguyenvhung@mail3.ru"),
+				S: aws.String(email), // here
 			},
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{

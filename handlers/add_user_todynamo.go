@@ -11,8 +11,6 @@ import (
     "github.com/aws/aws-sdk-go/aws"
     "github.com/aws/aws-sdk-go/aws/session"
     "github.com/aws/aws-sdk-go/service/dynamodb"
-    "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-    // "github.com/aws/aws-sdk-go/service/dynamodb/expression"
 
     "fmt"
     "os"
@@ -21,80 +19,43 @@ import (
 type Response events.APIGatewayProxyResponse
 type Request events.APIGatewayProxyRequest
 
-type Item struct {
-    Email string `json:"email"`
-    Nickname string `json:"nickname"`
-    Followings []string  `json:"followings"`
-    Followers []string  `json:"followers"`
-    GroupParticipations []string  `json:"groupParticipations"`
-    Bio string `json:"bio"`
-}
-
 type Req struct {
     Email string `json:"email"`
     Nickname string `json:"nickname"`
     Bio string `json:"bio"`
 }
 
-
-// var newvalues = {
-//     "email": request.body.email,
-//     "nickname": request.body.nickname,
-//     "followings": [],
-//     "followers": [],
-//     "groupParticipations": []
-// };
-
-// func Handler(ctx context.Context) (Response, error) {
 func Handler(request Request) (Response, error) {
 
     sess, err := session.NewSession(&aws.Config{
         Region: aws.String("ap-southeast-1")},
     )
-    // var requestBody map[string]interface{}
+    
     var req Req
-    // requestBody := Req{
-	// 	email : "",
-    //     nickname : "",
-    //     bio : "",
-	// }
     err = json.Unmarshal([]byte(request.Body), &req)
 	if err != nil {
 		return Response{Body: err.Error(), StatusCode: 404}, nil
     }
-
-    // var emailToFind string
-    // emailToFind = fmt.Sprintf("%v", requestBody["email"])
-    // // emailToFind = requestBody.email
-    // fmt.Println(request.Body)
     fmt.Println(req)
-    
-    // var emptyStringSlive []string
 
-    item := Item{
-        Email: "nguyenvhung@mail3.ru",
-        Nickname: "ru_hung",
-        Followings: []string{"me", "you"} ,
-        Followers: []string{"me", "you"}  ,
-        GroupParticipations: []string{"me", "you"} ,
-        Bio: "C'est le bio",
-    }
-    
-    // Create DynamoDB client
     svc := dynamodb.New(sess)
     tableName := "friends"
 
-    av, err := dynamodbattribute.MarshalMap(item)
-    if err != nil {
-        fmt.Println("Got error marshalling new item:")
-        fmt.Println(err.Error())
-        os.Exit(1)
-    }
-
-    fmt.Println(av)
-
     input := &dynamodb.PutItemInput{
-        Item:      av,
+        Item: map[string]*dynamodb.AttributeValue{
+            "email": {   S: aws.String(req.Email),   },
+            "nickname": {   S: aws.String(req.Nickname),   },
+            "bio": {   S: aws.String(req.Bio),   },
+            "groupParticipations": {
+                L: []*dynamodb.AttributeValue{},
+            },
+            "followers": {
+                L: []*dynamodb.AttributeValue{},
+            },
+            "followings": {
+                L: []*dynamodb.AttributeValue{},
+            },
+        },
         TableName: aws.String(tableName),
     }
 
