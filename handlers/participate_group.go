@@ -26,7 +26,7 @@ type Req struct {
     GroupToJoin string `json:"group_to_join"`
 }
 
-func Handler(request Request) (Response, error) {
+func ParticipateGroup(request Request) (Response, error) {
 
     sess, err := session.NewSession(&aws.Config{
         Region: aws.String("ap-southeast-1")},
@@ -110,5 +110,5 @@ func Handler(request Request) (Response, error) {
 
 
 func main() {
-	lambda.Start(Handler)
+	lambda.Start(ParticipateGroup)
 }

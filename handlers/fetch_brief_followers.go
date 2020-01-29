@@ -1,45 +1,4 @@
-// app.post("/find_user", async (request, response) => {
-//     let client = await MongoClient.connect(CONNECTION_URL, { useNewUrlParser: true });
-//     database = client.db(DATABASE_NAME);
-//     collection = database.collection("users_friends");
-
-//     collection.find({ "email": request.body.email_to_find }).toArray((error, result) => {
-//         if (error) {
-//             return response.status(500).send(error);
-//         }
-//         response.send(result[0]);
-//     });
-// });
-
-// snippet-comment:[These are tags for the AWS doc team's sample catalog. Do not remove.]
-// snippet-sourceauthor:[Doug-AWS]
-// snippet-sourcedescription:[DynamoDBScanItems.go gets items from and Amazon DymanoDB table using the Expression Builder package.]
-// snippet-keyword:[Amazon DynamoDB]
-// snippet-keyword:[Scan function]
-// snippet-keyword:[Expression Builder]
-// snippet-keyword:[Go]
-// snippet-sourcesyntax:[go]
-// snippet-service:[dynamodb]
-// snippet-keyword:[Code Sample]
-// snippet-sourcetype:[full-example]
-// snippet-sourcedate:[2019-03-19]
-/*
-   Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
-   This file is licensed under the Apache License, Version 2.0 (the "License").
-   You may not use this file except in compliance with the License. A copy of
-   the License is located at
-
-    http://aws.amazon.com/apache2.0/
-
-   This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied. See the License for the
-   specific language governing permissions and limitations under the License.
-*/
-// snippet-start:[dynamodb.go.scan_items]
 package main
-
-// snippet-start:[dynamodb.go.scan_items.imports]
 import (
     "bytes"
 	// "context"
@@ -62,11 +21,11 @@ type Response events.APIGatewayProxyResponse
 type Request events.APIGatewayProxyRequest
 
 type BodyRequest struct {
-	Email string `json:"email"`
+	Email string `json:"email_to_find"`
 }
 
 // func Handler(ctx context.Context) (Response, error) {
-func FindUser(request Request) (Response, error) {
+func FetchFollower(request Request) (Response, error) {
 
     sess, err := session.NewSession(&aws.Config{
         Region: aws.String("ap-southeast-1")},
@@ -88,7 +47,10 @@ func FindUser(request Request) (Response, error) {
     tableName := "friends"
     email := emailToFind
     filt := expression.Name("email").Equal(expression.Value(email))
-    expr, err := expression.NewBuilder().WithFilter(filt).Build()
+    proj := expression.NamesList(expression.Name("email"), expression.Name("followers"))
+    expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
+
+
     if err != nil {
         fmt.Println("Got error building expression:")
         fmt.Println(err.Error())
@@ -100,7 +62,7 @@ func FindUser(request Request) (Response, error) {
         ExpressionAttributeNames:  expr.Names(),
         ExpressionAttributeValues: expr.Values(),
         FilterExpression:          expr.Filter(),
-        // ProjectionExpression:      expr.Projection(),
+        ProjectionExpression:      expr.Projection(),
         TableName:                 aws.String(tableName),
     }
 
@@ -112,31 +74,36 @@ func FindUser(request Request) (Response, error) {
         os.Exit(1)
     }
     numItems := 0
-
+    
+    var allFollowers map[string][]interface{}
     var toReturn []map[string]interface{}
+    // var toReturn []interface{}
+    // var toReturn []string
+    err = dynamodbattribute.UnmarshalMap(result.Items[0], &allFollowers)
 
-    for _, i := range result.Items {
-        var item map[string]interface{}
-        err = dynamodbattribute.UnmarshalMap(i, &item)
-
-        av, err := json.Marshal(item) // This av is just for testing purpose:
-
+    for _, i := range allFollowers["followers"] {
+        emailOfFollower := fmt.Sprintf("%v", i)
+        resultat, err := svc.GetItem(&dynamodb.GetItemInput{
+            TableName: aws.String(tableName),
+            Key: map[string]*dynamodb.AttributeValue{
+                "email": {
+                    S: aws.String(emailOfFollower),
+                },
+            },
+        })
         if err != nil {
-            fmt.Println("Got error unmarshalling:")
             fmt.Println(err.Error())
-            os.Exit(1)
         }
-        fmt.Println(string(av)) // Printing av is just for testing purpose:
-        toReturn = append(toReturn, item)
+        var aFollower map[string]interface{}
+        err = dynamodbattribute.UnmarshalMap(resultat.Item, &aFollower)
+        if err != nil {
+            panic(fmt.Sprintf("Failed to unmarshal Record, %v", err))
+        }
+        toReturn = append(toReturn, aFollower)
         numItems++
     }
-
-    fmt.Println("Found", numItems, "item(s).")
-
+    fmt.Println(toReturn)
     var buf bytes.Buffer
-    // body, err := json.Marshal(map[string]interface{}{
-	// 	"message": "This is handler 2!",
-    // })
     body, err := json.Marshal(toReturn)
 	if err != nil {
 		return Response{StatusCode: 404}, err
@@ -158,5 +125,5 @@ func FindUser(request Request) (Response, error) {
 
 
 func main() {
-	lambda.Start(FindUser)
+	lambda.Start(FetchFollower)
 }

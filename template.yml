@@ -13,17 +13,17 @@ Resources:
   #         Properties:
   #           Path: /find_user
   #           Method: post
-  add_user_todynamo:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: bin/add_user_todynamo
-      Runtime: go1.x
-      Events:
-        Vote:
-          Type: Api
-          Properties:
-            Path: /add_user_todynamo
-            Method: post
+  # add_user_todynamo:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: bin/add_user_todynamo
+  #     Runtime: go1.x
+  #     Events:
+  #       Vote:
+  #         Type: Api
+  #         Properties:
+  #           Path: /add_user_todynamo
+  #           Method: post
   # participate_group:
   #   Type: AWS::Serverless::Function
   #   Properties:
@@ -35,3 +35,14 @@ Resources:
   #         Properties:
   #           Path: /participate_group
   #           Method: post
+  fetch_brief_followers:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: bin/fetch_brief_followers
+      Runtime: go1.x
+      Events:
+        Vote:
+          Type: Api
+          Properties:
+            Path: /fetch_brief_followers
+            Method: post

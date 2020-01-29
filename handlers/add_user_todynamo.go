@@ -21,11 +21,12 @@ type Request events.APIGatewayProxyRequest
 
 type Req struct {
     Email string `json:"email"`
+    Fullname string `json:"fullname"`
     Nickname string `json:"nickname"`
     Bio string `json:"bio"`
 }
 
-func Handler(request Request) (Response, error) {
+func AddUserToDynamo(request Request) (Response, error) {
 
     sess, err := session.NewSession(&aws.Config{
         Region: aws.String("ap-southeast-1")},
@@ -45,6 +46,7 @@ func Handler(request Request) (Response, error) {
         Item: map[string]*dynamodb.AttributeValue{
             "email": {   S: aws.String(req.Email),   },
             "nickname": {   S: aws.String(req.Nickname),   },
+            "fullname": {   S: aws.String(req.Fullname),   },
             "bio": {   S: aws.String(req.Bio),   },
             "groupParticipations": {
                 L: []*dynamodb.AttributeValue{},
@@ -92,5 +94,5 @@ func Handler(request Request) (Response, error) {
 
 
 func main() {
-	lambda.Start(Handler)
+	lambda.Start(AddUserToDynamo)
 }

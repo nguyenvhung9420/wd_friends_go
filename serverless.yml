@@ -15,6 +15,12 @@ package:
     - ./bin/**
 
 functions:
+  fetch_brief_followers:
+    handler: bin/fetch_brief_followers
+    events:
+      - http:
+          path: fetch_brief_followers
+          method: post
   participate_group:
     handler: bin/participate_group
     events:
