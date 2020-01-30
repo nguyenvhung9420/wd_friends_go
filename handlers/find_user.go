@@ -41,8 +41,8 @@ package main
 
 // snippet-start:[dynamodb.go.scan_items.imports]
 import (
-    "bytes"
-	// "context"
+    // "bytes"
+	"context"
     "encoding/json"
 
     "github.com/aws/aws-lambda-go/events"
@@ -61,38 +61,38 @@ import (
 type Response events.APIGatewayProxyResponse
 type Request events.APIGatewayProxyRequest
 
-type BodyRequest struct {
-	Email string `json:"email"`
-}
+// type BodyRequest struct {
+// 	Email string `json:"email"`
+// }
 
-// func Handler(ctx context.Context) (Response, error) {
-func FindUser(request Request) (Response, error) {
+func FindUser(ctx context.Context) (Response, error) {
+// func FindUser(request Request) (Response, error) {
 
     sess, err := session.NewSession(&aws.Config{
         Region: aws.String("ap-southeast-1")},
     )
-    // var requestBody map[string]interface{}
-    var requestBody BodyRequest
-    err = json.Unmarshal([]byte(request.Body), &requestBody)
-	if err != nil {
-		return Response{Body: err.Error(), StatusCode: 404}, nil
-	}
 
-    var emailToFind string
-    // emailToFind = fmt.Sprintf("%v", requestBody["email"])
-    emailToFind = requestBody.Email
-    fmt.Println(requestBody)
+    // var requestBody BodyRequest
+    // err = json.Unmarshal([]byte(request.Body), &requestBody)
+	// if err != nil {
+	// 	return Response{Body: err.Error(), StatusCode: 404}, nil
+	// }
+
+    // var emailToFind string
+    // emailToFind = requestBody.Email
+    // fmt.Println(requestBody)
 
     // Create DynamoDB client
     svc := dynamodb.New(sess)
     tableName := "friends"
-    email := emailToFind
+    // email := emailToFind
+    email := "nguyenvhung@live.fr"
     filt := expression.Name("email").Equal(expression.Value(email))
     expr, err := expression.NewBuilder().WithFilter(filt).Build()
     if err != nil {
         fmt.Println("Got error building expression:")
         fmt.Println(err.Error())
-        os.Exit(1)
+        // os.Exit(1)
     }
 
     // Build the query input parameters
@@ -109,7 +109,7 @@ func FindUser(request Request) (Response, error) {
     if err != nil {
         fmt.Println("Query API call failed:")
         fmt.Println((err.Error()))
-        os.Exit(1)
+        // os.Exit(1)
     }
     numItems := 0
 
@@ -124,34 +124,44 @@ func FindUser(request Request) (Response, error) {
         if err != nil {
             fmt.Println("Got error unmarshalling:")
             fmt.Println(err.Error())
-            os.Exit(1)
+            // os.Exit(1)
         }
         fmt.Println(string(av)) // Printing av is just for testing purpose:
         toReturn = append(toReturn, item)
         numItems++
     }
 
+    // toReturn2 := map[string]interface{}{
+	// 	"message2": "This is handler 2!",
+	// }
+
     fmt.Println("Found", numItems, "item(s).")
 
-    var buf bytes.Buffer
-    // body, err := json.Marshal(map[string]interface{}{
-	// 	"message": "This is handler 2!",
-    // })
-    body, err := json.Marshal(toReturn)
+    // var buf bytes.Buffer
+    newsList := make([]map[string]interface{},0)
+    err = json.NewDecoder(os.Stdout).Decode(&toReturn)
+
+    // body, err := json.Marshal(map[string]map[string]interface{}   {
+	// 	"message": toReturn,
+    // } )
+    body, err := json.Marshal(&newsList)
 	if err != nil {
 		return Response{StatusCode: 404}, err
 	}
-	json.HTMLEscape(&buf, body)
-
+	// json.HTMLEscape(&buf, body)
+    fmt.Println(string(body))
     resp := Response{
 		StatusCode:      200,
 		IsBase64Encoded: false,
-		Body:            buf.String(),
+		// Body:            buf.String(),
+        Body:            string(body),
 		Headers: map[string]string{
 			"Content-Type":           "application/json",
 			"X-MyCompany-Func-Reply": "hello-handler",
 		},
 	}
+
+    fmt.Println(resp)
 
 	return resp, nil
 }

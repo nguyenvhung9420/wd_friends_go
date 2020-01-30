@@ -2,17 +2,17 @@ AWSTemplateFormatVersion : '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: A hello world application.
 Resources:
-  # find_user:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     Handler: bin/find_user
-  #     Runtime: go1.x
-  #     Events:
-  #       Vote:
-  #         Type: Api
-  #         Properties:
-  #           Path: /find_user
-  #           Method: post
+  find_user:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: bin/find_user
+      Runtime: go1.x
+      Events:
+        Vote:
+          Type: Api
+          Properties:
+            Path: /find_user
+            Method: get
   # add_user_todynamo:
   #   Type: AWS::Serverless::Function
   #   Properties:
@@ -46,14 +46,14 @@ Resources:
   #         Properties:
   #           Path: /fetch_brief_followers
   #           Method: post
-  add_follower:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: bin/add_follower
-      Runtime: go1.x
-      Events:
-        Vote:
-          Type: Api
-          Properties:
-            Path: /add_follower
-            Method: post
+  # add_follower:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: bin/add_follower
+  #     Runtime: go1.x
+  #     Events:
+  #       Vote:
+  #         Type: Api
+  #         Properties:
+  #           Path: /add_follower
+  #           Method: post
