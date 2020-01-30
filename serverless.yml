@@ -39,6 +39,12 @@ functions:
       - http:
           path: find_user
           method: post
+  add_follower:
+    handler: bin/add_follower
+    events:
+      - http:
+          path: add_follower
+          method: post
   
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

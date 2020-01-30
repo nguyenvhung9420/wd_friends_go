@@ -35,14 +35,25 @@ Resources:
   #         Properties:
   #           Path: /participate_group
   #           Method: post
-  fetch_brief_followers:
+  # fetch_brief_followers:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: bin/fetch_brief_followers
+  #     Runtime: go1.x
+  #     Events:
+  #       Vote:
+  #         Type: Api
+  #         Properties:
+  #           Path: /fetch_brief_followers
+  #           Method: post
+  add_follower:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: bin/fetch_brief_followers
+      Handler: bin/add_follower
       Runtime: go1.x
       Events:
         Vote:
           Type: Api
           Properties:
-            Path: /fetch_brief_followers
+            Path: /add_follower
             Method: post
