@@ -1,47 +1,8 @@
-// app.post("/find_user", async (request, response) => {
-//     let client = await MongoClient.connect(CONNECTION_URL, { useNewUrlParser: true });
-//     database = client.db(DATABASE_NAME);
-//     collection = database.collection("users_friends");
-
-//     collection.find({ "email": request.body.email_to_find }).toArray((error, result) => {
-//         if (error) {
-//             return response.status(500).send(error);
-//         }
-//         response.send(result[0]);
-//     });
-// });
-
-// snippet-comment:[These are tags for the AWS doc team's sample catalog. Do not remove.]
-// snippet-sourceauthor:[Doug-AWS]
-// snippet-sourcedescription:[DynamoDBScanItems.go gets items from and Amazon DymanoDB table using the Expression Builder package.]
-// snippet-keyword:[Amazon DynamoDB]
-// snippet-keyword:[Scan function]
-// snippet-keyword:[Expression Builder]
-// snippet-keyword:[Go]
-// snippet-sourcesyntax:[go]
-// snippet-service:[dynamodb]
-// snippet-keyword:[Code Sample]
-// snippet-sourcetype:[full-example]
-// snippet-sourcedate:[2019-03-19]
-/*
-   Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
-   This file is licensed under the Apache License, Version 2.0 (the "License").
-   You may not use this file except in compliance with the License. A copy of
-   the License is located at
-
-    http://aws.amazon.com/apache2.0/
-
-   This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied. See the License for the
-   specific language governing permissions and limitations under the License.
-*/
-// snippet-start:[dynamodb.go.scan_items]
 package main
 
 // snippet-start:[dynamodb.go.scan_items.imports]
 import (
-    // "bytes"
+    "bytes"
 	"context"
     "encoding/json"
 
@@ -55,38 +16,38 @@ import (
     "github.com/aws/aws-sdk-go/service/dynamodb/expression"
 
     "fmt"
-    "os"
+    // "os"
 )
 
 type Response events.APIGatewayProxyResponse
 type Request events.APIGatewayProxyRequest
 
-// type BodyRequest struct {
-// 	Email string `json:"email"`
-// }
+type BodyRequest struct {
+	Email string `json:"email"`
+}
 
-func FindUser(ctx context.Context) (Response, error) {
+func FindUser(ctx context.Context, request Request) (Response, error) {
 // func FindUser(request Request) (Response, error) {
 
     sess, err := session.NewSession(&aws.Config{
         Region: aws.String("ap-southeast-1")},
     )
 
-    // var requestBody BodyRequest
-    // err = json.Unmarshal([]byte(request.Body), &requestBody)
-	// if err != nil {
-	// 	return Response{Body: err.Error(), StatusCode: 404}, nil
-	// }
+    var requestBody BodyRequest
+    err = json.Unmarshal([]byte(request.Body), &requestBody)
+	if err != nil {
+		return Response{Body: err.Error(), StatusCode: 404}, nil
+	}
 
-    // var emailToFind string
-    // emailToFind = requestBody.Email
-    // fmt.Println(requestBody)
+    var emailToFind string
+    emailToFind = requestBody.Email
+    fmt.Println(requestBody)
 
     // Create DynamoDB client
     svc := dynamodb.New(sess)
     tableName := "friends"
-    // email := emailToFind
-    email := "nguyenvhung@live.fr"
+    email := emailToFind
+    // email := "nguyenvhung@live.fr"
     filt := expression.Name("email").Equal(expression.Value(email))
     expr, err := expression.NewBuilder().WithFilter(filt).Build()
     if err != nil {
@@ -131,33 +92,28 @@ func FindUser(ctx context.Context) (Response, error) {
         numItems++
     }
 
-    // toReturn2 := map[string]interface{}{
-	// 	"message2": "This is handler 2!",
-	// }
-
     fmt.Println("Found", numItems, "item(s).")
 
-    // var buf bytes.Buffer
-    newsList := make([]map[string]interface{},0)
-    err = json.NewDecoder(os.Stdout).Decode(&toReturn)
+    var buf bytes.Buffer
 
     // body, err := json.Marshal(map[string]map[string]interface{}   {
 	// 	"message": toReturn,
     // } )
-    body, err := json.Marshal(&newsList)
+    body, err := json.Marshal(&toReturn)
 	if err != nil {
 		return Response{StatusCode: 404}, err
 	}
-	// json.HTMLEscape(&buf, body)
-    fmt.Println(string(body))
+	json.HTMLEscape(&buf, body)
+    
     resp := Response{
 		StatusCode:      200,
 		IsBase64Encoded: false,
-		// Body:            buf.String(),
-        Body:            string(body),
+		Body:            buf.String(),
+        // Body:            string(body),
 		Headers: map[string]string{
 			"Content-Type":           "application/json",
-			"X-MyCompany-Func-Reply": "hello-handler",
+            "X-MyCompany-Func-Reply": "hello-handler",
+            "Access-Control-Allow-Origin": "*",
 		},
 	}
 

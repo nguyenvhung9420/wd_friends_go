@@ -85,7 +85,8 @@ func AddUserToDynamo(request Request) (Response, error) {
 		Body:            buf.String(),
 		Headers: map[string]string{
 			"Content-Type":           "application/json",
-			"X-MyCompany-Func-Reply": "hello-handler",
+            "X-MyCompany-Func-Reply": "hello-handler",
+            "Access-Control-Allow-Origin": "*",
 		},
 	}
 

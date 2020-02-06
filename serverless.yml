@@ -50,7 +50,7 @@ functions:
     events:
       - http:
           path: find_user
-          method: get
+          method: post
           cors: true
   add_follower:
     handler: bin/add_follower

@@ -102,6 +102,7 @@ func ParticipateGroup(request Request) (Response, error) {
 		Headers: map[string]string{
 			"Content-Type":           "application/json",
 			"X-MyCompany-Func-Reply": "hello-handler",
+            "Access-Control-Allow-Origin": "*",
 		},
 	}
 
